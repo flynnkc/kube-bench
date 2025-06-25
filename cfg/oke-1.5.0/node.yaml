@@ -1,0 +1,156 @@
+---
+controls:
+version: "oke-1.5.0"
+id: 3
+text: "Worker Nodes"
+type: "node"
+groups:
+  - id: 3.1
+    text: "Worker Node Configuration Files"
+    checks:
+      - id: 3.1.1
+        text: "Ensure that the oke_kubelet_conf.json file permissions are set to 644 or more restrictive (Automated)"
+        audit: '/bin/sh -c ''if test -e /var/lib/kubelet/oke_kubelet_conf.json; then stat -c permissions=%a /var/lib/kubelet/oke_kubelet_conf.json; fi'' '
+        tests:
+          test_items:
+            - flag: "permissions"
+              compare:
+                op: bitmask
+                value: "644"
+        remediation: |
+          Run the below command (based on the file location on your system) on the each worker node. For example,
+          chmod 644 <oke_kubelet_conf.json file>
+        scored: false
+
+      - id: 3.1.2
+        text: "Ensure that the proxy oke_kubelet_conf.json file ownership is set to root:root (Automated)"
+        audit: '/bin/sh -c ''if test -e /var/lib/kubelet/oke_kubelet_conf.json; then stat -c %U:%G /var/lib/kubelet/oke_kubelet_conf.json; else echo \"File not found\"; fi'' '
+        tests:
+          bin_op: or
+          test_items:
+            - flag: root:root
+            - flag: "File not found"
+        remediation: |
+          Run the below command (based on the file location on your system) on the each worker node. For example,
+          chown root:root <oke_kubelet_conf.json file>
+        scored: true
+
+      - id: 3.1.3
+        text: "Ensure that the kubelet configuration file has permissions set to 644 or more restrictive (Automated)"
+        audit: '/bin/sh -c ''if test -e $kubeletconf; then stat -c permissions=%a $kubeletconf; fi'' '
+        tests:
+          test_items:
+            - flag: "permissions"
+              compare:
+                op: bitmask
+                value: "644"
+        remediation: |
+          Run the following command (using the config file location identied in the Audit step):
+          chmod 644 $kubeletconf
+        scored: true
+
+      - id: 3.1.4
+        text: "Ensure that the kubelet configuration file ownership is set to root:root (Automated)"
+        audit: '/bin/sh -c ''if test -e $kubeletconf; then stat -c %U:%G $kubeletconf; else echo \"File not found\"; fi'' '
+        tests:
+          bin_op: or
+          test_items:
+            - flag: root:root
+            - flag: "File not found"
+        remediation: |
+          Run the below command (using the config file location identied in the Audit step) on the each worker node. For example,
+          chown root:root $kubeletconf
+        scored: true
+
+  - id: 3.2
+    text: "Kubelet"
+    checks:
+      - id: 3.2.1
+        text: "Ensure that the --anonymous-auth argument is set to false (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          test_items:
+            - flag: "--anonymous-auth"
+              path: '{.authentication.anonymous.enabled}'
+              compare:
+                op: eq
+                value: false
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file /etc/systemd/system/kubelet.service and set the below parameter
+          --anonymous-auth=false
+        scored: false
+
+      - id: 3.2.2
+        text: "Ensure that the --authorization-mode argument is not set to AlwaysAllow (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        tests:
+          test_items:
+            - flag: "--authentication-mode"
+              compare:
+                op: noteq
+                value: "AlwaysAllow"
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletconf and set the below parameter
+          --authorization-mode=Webhook
+        scored: true
+
+      - id: 3.2.3
+        text: "Ensure that the --client-ca-file argument is set as appropriate (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          test_items:
+            - flag: "--client-ca-file"
+              path: '{.authentication.x509.clientCAFile}'
+              compare:
+                op: regex
+                value: '^.+$'
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+          --client-ca-file=/etc/kubernetes/ca.crt \
+          Based on your system, restart the kubelet service and check status
+          systemctl daemon-reload
+          systemctl restart kubelet.service
+          systemctl status kubelet -l
+        scored: true
+
+      - id: 3.2.4
+        text: "Ensure that the --read-only-port argument is set to 0 (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          test_items:
+            - flag: "--read-only-port"
+              path: '{.readOnlyPort}'
+              compare:
+                op: eq
+                value: "0"
+        remediation: |
+          If modifying the Kubelet config file, edit the kubelet.service file /etc/sytemd/system/kubelet.service and set the below parameter
+          --read-only-port=0
+          For all remediations:
+          Based on your system, restart the kubelet service and check status
+          systemctl daemon-reload
+          systemctl restart kubelet.service
+          systemctl status kubelet -l
+        scored: true
+
+      - id: 3.2.5
+        text: "Ensure that the --streaming-connection-idle-timeout argument is not set to 0 (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          test_items:
+            - flag: "--streaming-connection-idle-timeout"
+              path: '{.streamingConnectionIdleTimeout}'
+              compare:
+                op: noteq
+                value: "0"
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+          --streaming-connection-idle-timeout
+          Based on your system, restart the kubelet service and check status
+          systemctl daemon-reload
+          systemctl restart kubelet.service
+          systemctl status kubelet -l
