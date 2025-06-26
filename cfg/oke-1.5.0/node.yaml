@@ -84,12 +84,18 @@ groups:
       - id: 3.2.2
         text: "Ensure that the --authorization-mode argument is not set to AlwaysAllow (Automated)"
         audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
         tests:
+          bin_op: or
           test_items:
             - flag: "--authentication-mode"
               compare:
                 op: noteq
                 value: "AlwaysAllow"
+            - path: '{.authentication.webhook.enabled}'
+              compare:
+                op: eq
+                value: true
         remediation: |
           If modifying the Kubelet service config file, edit the kubelet.service file $kubeletconf and set the below parameter
           --authorization-mode=Webhook
@@ -154,3 +160,102 @@ groups:
           systemctl daemon-reload
           systemctl restart kubelet.service
           systemctl status kubelet -l
+        scored: false
+
+      - id: 3.2.6
+        text: "Ensure that the --make-iptables-util-chains argument is set to true (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          test_items:
+            - flag: "--make-iptables-util-chains"
+              path: '{.makeIPTablesUtilChains}'
+              compare:
+                op: eq
+                value: "true"
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+          --make-iptables-util-chains:true
+          Based on your system, restart the kubelet service and check status
+          systemctl daemon-reload
+          systemctl restart kubelet.service
+          systemctl status kubelet -l
+        scored: false
+
+      - id: 3.2.7
+        text: "Ensure that the --event-qps argument is set to 0 or a level which ensures appropriate event capture (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          test_items:
+            - flag: "--event-qps"
+              path: '{.eventRecordQPS}'
+              compare:
+                op: eq
+                value: "0"
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+          --event-qps=0
+          Based on your system, restart the kubelet service and check status
+          systemctl daemon-reload
+          systemctl restart kubelet.service
+          systemctl status kubelet -l
+        scored: true
+
+      - id: 3.2.8
+        text: "Ensure that the --tls-cert-file and --tls-private-key-file arguments are set as appropriate (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          bin_op: and
+          test_items:
+            - flag: "--tls-cert-file"
+              path: '{.tlsCertFile}'
+            - flag: "--tls-private-key-file"
+              path: '{.tlsPrivateKeyFile}'
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+          Verify that the `tls-cert-file=/var/lib/kubelet/pki/tls.pem`.
+          Verify that the `tls-private-key-file=/var/lib/kubelet/pki/tls.key`.
+          systemctl daemon-reload
+          systemctl restart kubelet.service
+          systemctl status kubelet -l
+        scored: true
+
+      - id: 3.2.9
+        text: "Ensure that the --rotate-certificates argument is not set to false (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          test_items:
+            - flag: "--rotate-certificates"
+              path: '{.rotateCertificates}'
+              compare:
+                op: noteq
+                value: false
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+          Verify that the `--rotate-certificates` is present.
+          systemctl daemon-reload
+          systemctl restart kubelet.service
+          systemctl status kubelet -l
+        scored: true
+
+      - id: 3.2.10
+        text: "Ensure that the --rotate-server-certificates argument is set to true (Automated)"
+        audit: "/bin/ps -fC $kubeletbin"
+        audit_config: "/bin/cat $kubeletconf"
+        tests:
+          test_items:
+            - flag: "--rotate-server-certificates"
+              path: '{.featureGates.RotateKubeletServerCertificate}'
+              compare:
+                op: eq
+                value: true
+        remediation: |
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+          --rotate-server-certificates=true
+          systemctl daemon-reload
+          systemctl restart kubelet.service
+          systemctl status kubelet -l
+        scored: true
