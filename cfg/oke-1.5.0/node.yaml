@@ -19,7 +19,8 @@ groups:
                 value: "644"
         remediation: |
           Run the below command (based on the file location on your system) on the each worker node. For example,
-          chmod 644 <oke_kubelet_conf.json file>
+
+            chmod 644 $kubeletconf
         scored: false
 
       - id: 3.1.2
@@ -32,7 +33,8 @@ groups:
             - flag: "File not found"
         remediation: |
           Run the below command (based on the file location on your system) on the each worker node. For example,
-          chown root:root <oke_kubelet_conf.json file>
+
+            chown root:root $kubeletconf
         scored: true
 
       - id: 3.1.3
@@ -46,7 +48,8 @@ groups:
                 value: "644"
         remediation: |
           Run the following command (using the config file location identied in the Audit step):
-          chmod 644 $kubeletconf
+
+            chmod 644 $kubeletconf
         scored: true
 
       - id: 3.1.4
@@ -59,7 +62,8 @@ groups:
             - flag: "File not found"
         remediation: |
           Run the below command (using the config file location identied in the Audit step) on the each worker node. For example,
-          chown root:root $kubeletconf
+
+            chown root:root $kubeletconf
         scored: true
 
   - id: 3.2
@@ -77,8 +81,9 @@ groups:
                 op: eq
                 value: false
         remediation: |
-          If modifying the Kubelet service config file, edit the kubelet.service file /etc/systemd/system/kubelet.service and set the below parameter
-          --anonymous-auth=false
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+
+            --anonymous-auth=false
         scored: false
 
       - id: 3.2.2
@@ -97,8 +102,9 @@ groups:
                 op: eq
                 value: true
         remediation: |
-          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletconf and set the below parameter
-          --authorization-mode=Webhook
+          If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+
+            --authorization-mode=Webhook
         scored: true
 
       - id: 3.2.3
@@ -114,11 +120,13 @@ groups:
                 value: '^.+$'
         remediation: |
           If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
-          --client-ca-file=/etc/kubernetes/ca.crt \
+
+            --client-ca-file=/etc/kubernetes/ca.crt \
+
           Based on your system, restart the kubelet service and check status
-          systemctl daemon-reload
-          systemctl restart kubelet.service
-          systemctl status kubelet -l
+            systemctl daemon-reload
+            systemctl restart kubelet.service
+            systemctl status kubelet -l
         scored: true
 
       - id: 3.2.4
@@ -133,13 +141,16 @@ groups:
                 op: eq
                 value: "0"
         remediation: |
-          If modifying the Kubelet config file, edit the kubelet.service file /etc/sytemd/system/kubelet.service and set the below parameter
-          --read-only-port=0
+          If modifying the Kubelet config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+
+            --read-only-port=0
+
           For all remediations:
           Based on your system, restart the kubelet service and check status
-          systemctl daemon-reload
-          systemctl restart kubelet.service
-          systemctl status kubelet -l
+
+            systemctl daemon-reload
+            systemctl restart kubelet.service
+            systemctl status kubelet -l
         scored: true
 
       - id: 3.2.5
@@ -155,11 +166,14 @@ groups:
                 value: "0"
         remediation: |
           If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
-          --streaming-connection-idle-timeout
+
+            --streaming-connection-idle-timeout
+
           Based on your system, restart the kubelet service and check status
-          systemctl daemon-reload
-          systemctl restart kubelet.service
-          systemctl status kubelet -l
+
+            systemctl daemon-reload
+            systemctl restart kubelet.service
+            systemctl status kubelet -l
         scored: false
 
       - id: 3.2.6
@@ -175,11 +189,14 @@ groups:
                 value: "true"
         remediation: |
           If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
-          --make-iptables-util-chains:true
+
+            --make-iptables-util-chains:true
+
           Based on your system, restart the kubelet service and check status
-          systemctl daemon-reload
-          systemctl restart kubelet.service
-          systemctl status kubelet -l
+
+            systemctl daemon-reload
+            systemctl restart kubelet.service
+            systemctl status kubelet -l
         scored: false
 
       - id: 3.2.7
@@ -195,11 +212,14 @@ groups:
                 value: "0"
         remediation: |
           If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
-          --event-qps=0
+
+            --event-qps=0
+
           Based on your system, restart the kubelet service and check status
-          systemctl daemon-reload
-          systemctl restart kubelet.service
-          systemctl status kubelet -l
+
+            systemctl daemon-reload
+            systemctl restart kubelet.service
+            systemctl status kubelet -l
         scored: true
 
       - id: 3.2.8
@@ -215,11 +235,15 @@ groups:
               path: '{.tlsPrivateKeyFile}'
         remediation: |
           If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+
           Verify that the `tls-cert-file=/var/lib/kubelet/pki/tls.pem`.
           Verify that the `tls-private-key-file=/var/lib/kubelet/pki/tls.key`.
-          systemctl daemon-reload
-          systemctl restart kubelet.service
-          systemctl status kubelet -l
+
+          Based on your system, restart the kubelet service and check status
+
+            systemctl daemon-reload
+            systemctl restart kubelet.service
+            systemctl status kubelet -l
         scored: true
 
       - id: 3.2.9
@@ -235,10 +259,14 @@ groups:
                 value: false
         remediation: |
           If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
+
           Verify that the `--rotate-certificates` is present.
-          systemctl daemon-reload
-          systemctl restart kubelet.service
-          systemctl status kubelet -l
+
+          Based on your system, restart the kubelet service and check status
+
+            systemctl daemon-reload
+            systemctl restart kubelet.service
+            systemctl status kubelet -l
         scored: true
 
       - id: 3.2.10
@@ -254,8 +282,12 @@ groups:
                 value: true
         remediation: |
           If modifying the Kubelet service config file, edit the kubelet.service file $kubeletsvc and set the below parameter
-          --rotate-server-certificates=true
-          systemctl daemon-reload
-          systemctl restart kubelet.service
-          systemctl status kubelet -l
+
+            --rotate-server-certificates=true
+
+          Based on your system, restart the kubelet service and check status
+
+            systemctl daemon-reload
+            systemctl restart kubelet.service
+            systemctl status kubelet -l
         scored: true
