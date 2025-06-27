@@ -1,6 +1,6 @@
 ---
 controls:
-version: "oke-1.5.0"
+version: "oke-1.7.0"
 text: "Control Plane Configuration"
 type: "controlplane"
 groups:
@@ -11,10 +11,8 @@ groups:
         text: "Client certificate authentication should not be used for users (Automated)"
         type: skip
         remediation: |
-          Alternative mechanisms provided by Kubernetes such as the use of OIDC should be
-          implemented in place of client certificates.
+          Alternative mechanisms provided by Kubernetes such as the use of OIDC should be implemented in place of client certificates.
           You can remediate the availability of client certificates in your OKE cluster.
-        scored: false
 
   - id: 2.2
     text: "Logging"
