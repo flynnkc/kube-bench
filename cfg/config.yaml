@@ -526,3 +526,5 @@ target_mapping:
   "oke-1.5.0":
     - "node"
     - "controlplane"
+    - "policies"
+    - "managedservices"
